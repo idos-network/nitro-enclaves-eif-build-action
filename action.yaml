@@ -4,8 +4,8 @@ description: |
   A Github action to build reproducible AWS Nitro Enclaves EIF file
 author: Richard Fan
 branding:
-  icon: 'package'
-  color: 'blue'
+  icon: "package"
+  color: "blue"
 inputs:
   docker-build-context-path:
     description: "The path of Docker build context directory. Relative to the project root"
@@ -35,6 +35,10 @@ inputs:
     description: "Whether to save PCR values as Oras annotation (Allowed values: 'true', 'false')"
     required: true
     default: "false"
+  custom-enclave-kernel-blobs:
+    description: "Path to custom kernel"
+    required: false
+    default: "false"
   github-token:
     description: "The Github token used to login ghcr. (Required when enable-ghcr-push is true)"
     required: false
@@ -56,7 +60,7 @@ outputs:
   rekor-log-index:
     description: "The Rekor transparency log index of the signing"
     value: ${{ steps.sign-artifact.outputs.log-index || '' }}
-    
+
 runs:
   using: "composite"
   steps:
@@ -131,6 +135,7 @@ runs:
       id: run-build-script
       env:
         DOCKER_CONTEXT_DIR: ${{ inputs.docker-build-context-path }}
+        CUSTOM_KERNEL_BLOBS_DIR: ${{ inputs.custom-enclave-kernel-blobs }}
         DOCKERFILE_PATH: ${{ inputs.dockerfile-path }}
         EIF_OUTPUT_PATH: ${{ github.action_path }}/eif-output
       shell: bash
@@ -138,13 +143,13 @@ runs:
 
     - name: Setup oras
       if: ${{ inputs.enable-ghcr-push == 'true' }}
-      uses: oras-project/setup-oras@ee7dbe1144cb00080a89497f937dae78f85fce29  # oras-project/setup-oras@v1.1.0
+      uses: oras-project/setup-oras@ee7dbe1144cb00080a89497f937dae78f85fce29 # oras-project/setup-oras@v1.1.0
       with:
         version: 1.1.0
 
     - name: Log into ghcr.io
       if: ${{ inputs.enable-ghcr-push == 'true' }}
-      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d  # docker/login-action@v3.0.0
+      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # docker/login-action@v3.0.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -152,7 +157,7 @@ runs:
 
     - name: Install Cosign
       if: ${{ inputs.enable-artifact-sign == 'true' }}
-      uses: sigstore/cosign-installer@e1523de7571e31dbe865fd2e80c5c7c23ae71eb4  # sigstore/cosign-installer@v3.4.0
+      uses: sigstore/cosign-installer@e1523de7571e31dbe865fd2e80c5c7c23ae71eb4 # sigstore/cosign-installer@v3.4.0
 
     - name: Push file to ghcr.io
       id: push-file

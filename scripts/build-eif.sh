@@ -44,7 +44,11 @@ docker build -t eif-builder -f eif-builder.Dockerfile .
 DOCKER_SOCK_PATH=$(docker context inspect | jq -r '.[0].Endpoints.docker.Host' | sed "s^unix://^^")
 
 # Run EIF builder with Docker-in-Docker
-docker run -v ${DOCKER_SOCK_PATH}:/var/run/docker.sock -v ${EIF_OUTPUT_PATH}:/output -e DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG} eif-builder
+docker run \
+  -v ${DOCKER_SOCK_PATH}:/var/run/docker.sock \
+  -v ${EIF_OUTPUT_PATH}:/output \
+  -v ${CUSTOM_KERNEL_BLOBS_DIR}:/custom-kernel-blobs \
+  -e DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG} eif-builder
 
 # Output
 echo "eif-file-path=${EIF_OUTPUT_PATH}/enclave.eif" >> ${GITHUB_OUTPUT}
