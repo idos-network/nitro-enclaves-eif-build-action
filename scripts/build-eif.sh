@@ -43,6 +43,8 @@ docker build -t eif-builder -f eif-builder.Dockerfile .
 # Get local docker socket path
 DOCKER_SOCK_PATH=$(docker context inspect | jq -r '.[0].Endpoints.docker.Host' | sed "s^unix://^^")
 
+CUSTOM_KERNEL_BLOBS_DIR="${GITHUB_WORKSPACE}/${CUSTOM_KERNEL_BLOBS_DIR}"
+
 # Run EIF builder with Docker-in-Docker
 docker run \
   -v ${DOCKER_SOCK_PATH}:/var/run/docker.sock \
