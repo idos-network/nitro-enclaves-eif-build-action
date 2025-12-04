@@ -1,4 +1,4 @@
-FROM amazonlinux@2023
+FROM amazonlinux:2023
 
 # Install nitro-cli
 RUN dnf install aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel -y
