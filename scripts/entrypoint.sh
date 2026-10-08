@@ -1,14 +1,13 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-if [ -d "/custom-kernel-blobs" ] && [ "$(ls -A /custom-kernel-blobs)" ]; then
-  echo "Custom kernel blobs found. Copying to /usr/share/nitro_enclaves/blobs..."
-  rm -rf /usr/share/nitro_enclaves/blobs/
-  cp -a /custom-kernel-blobs/ /usr/share/nitro_enclaves/blobs
-  ls -lh /usr/share/nitro_enclaves/blobs
-else
-  echo "No custom kernel blobs provided."
-fi
+for f in bzImage cmdline init linuxkit nsm.ko; do
+  [[ -f "/blobs/$f" ]] || { echo "Missing kernel blob: /blobs/$f" >&2; exit 1; }
+done
 
-nitro-cli build-enclave --docker-uri ${DOCKER_IMAGE_TAG}:latest --output-file /output/enclave.eif
-nitro-cli describe-eif --eif-path /output/enclave.eif > /output/eif-info.txt
+# nitro-cli has no flag for the blobs dir; replace the stock ones.
+rm -rf /usr/share/nitro_enclaves/blobs
+cp -a /blobs /usr/share/nitro_enclaves/blobs
+
+nitro-cli build-enclave --docker-uri "$APP_IMAGE" --output-file "/output/$EIF_NAME"
+nitro-cli describe-eif --eif-path "/output/$EIF_NAME" > "/output/${EIF_NAME%.eif}-info.json"
